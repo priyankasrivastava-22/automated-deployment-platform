@@ -62,19 +62,22 @@ pipeline {
             }
         }
 
-        stage('Set Environment Based On Branch') {
+          stage('Set Environment Based On Branch') {
             steps {
-                script {
-                    if (env.BRANCH_NAME == 'dev') {
-                        env.CONTAINER_NAME = "automated-app-dev"
-                        env.PORT = "5001"
-                    } else {
-                        env.CONTAINER_NAME = "automated-app"
-                        env.PORT = "5000"
-                    }
+               script {
+                 def branch = sh(script: "git rev-parse --abbrev-ref HEAD", returnStdout: true).trim()
+                 echo "Detected Branch: ${branch}"
+
+                 if (branch == "dev") {
+                     env.CONTAINER_NAME = "automated-app-dev"
+                     env.PORT = "5001"
+                }  else {
+                     env.CONTAINER_NAME = "automated-app"
+                     env.PORT = "5000"
                 }
             }
         }
+    }
 
         stage('Build Docker Image') {
             steps {
