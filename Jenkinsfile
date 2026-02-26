@@ -64,16 +64,15 @@ pipeline {
 
           stage('Set Environment Based On Branch') {
             steps {
-               script {
-                 def branch = sh(script: "git rev-parse --abbrev-ref HEAD", returnStdout: true).trim()
-                 echo "Detected Branch: ${branch}"
+              script {
+                echo "Git Branch: ${env.GIT_BRANCH}"
 
-                 if (branch == "dev") {
-                     env.CONTAINER_NAME = "automated-app-dev"
-                     env.PORT = "5001"
-                }  else {
-                     env.CONTAINER_NAME = "automated-app"
-                     env.PORT = "5000"
+                if (env.GIT_BRANCH.contains("dev")) {
+                    env.CONTAINER_NAME = "automated-app-dev"
+                    env.PORT = "5001"
+                } else {
+                    env.CONTAINER_NAME = "automated-app"
+                    env.PORT = "5000"
                 }
             }
         }
