@@ -1,15 +1,29 @@
-from datetime import datetime
 from .database import db
+from datetime import datetime
 
 
-# class Build(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     status = db.Column(db.String(50), nullable=False)
-#     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+class Environment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50))
+    status = db.Column(db.String(50))
+
+
+class Build(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    status = db.Column(db.String(50))
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 class Deployment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    project_name = db.Column(db.String(100), nullable=False)
-    status = db.Column(db.String(50), nullable=False)
+    environment = db.Column(db.String(50))
+    version = db.Column(db.String(50))
+    status = db.Column(db.String(50))
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class SystemMetrics(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    cpu = db.Column(db.Float)
+    memory = db.Column(db.Float)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
