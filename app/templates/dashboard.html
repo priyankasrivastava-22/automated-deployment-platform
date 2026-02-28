@@ -1,17 +1,32 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>CI/CD Monitoring Dashboard</title>
+    <title>CI/CD Dashboard</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
-<h1>🚀 CI/CD Monitoring Dashboard</h1>
+<div class="header">
+    <h1>CI/CD Enabled Containerized Web Application</h1>
+</div>
 
-<div class="grid">
+<!-- PIPELINE FLOW -->
+<div class="pipeline">
+    <div class="stage">DEV</div>
+    <div class="arrow">→</div>
+    <div class="stage">BUILD</div>
+    <div class="arrow">→</div>
+    <div class="stage">TEST</div>
+    <div class="arrow">→</div>
+    <div class="stage">DOCKER</div>
+    <div class="arrow">→</div>
+    <div class="stage">PRODUCTION</div>
+</div>
 
+<!-- STATUS SECTION -->
+<div class="grid-2">
     <div class="card">
-        <h2>Environment</h2>
+        <h2>Application Status</h2>
         <p id="env"></p>
         <p id="version"></p>
     </div>
@@ -21,22 +36,44 @@
         <p id="cpu"></p>
         <p id="memory"></p>
     </div>
+</div>
 
-    <div class="card">
-        <h2>Build History</h2>
-        <ul id="build-history"></ul>
-    </div>
+<!-- BUILD HISTORY -->
+<div class="card full">
+    <h2>Build History</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Status</th>
+                <th>Timestamp</th>
+            </tr>
+        </thead>
+        <tbody id="build-history"></tbody>
+    </table>
+</div>
 
-    <div class="card">
-        <h2>Deployments</h2>
-        <ul id="deployment-history"></ul>
-    </div>
+<!-- DEPLOYMENT HISTORY -->
+<div class="card full">
+    <h2>Deployment History</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Environment</th>
+                <th>Version</th>
+                <th>Status</th>
+                <th>Timestamp</th>
+            </tr>
+        </thead>
+        <tbody id="deployment-history"></tbody>
+    </table>
+</div>
 
-    <div class="card full-width">
-        <h2>Logs</h2>
-        <ul id="logs"></ul>
-    </div>
-
+<!-- LOGS -->
+<div class="card full">
+    <h2>Logs</h2>
+    <div id="logs" class="logs"></div>
 </div>
 
 <script src="/static/script.js"></script>

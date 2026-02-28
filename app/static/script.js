@@ -1,62 +1,70 @@
 async function loadData() {
 
     // STATUS
-    const status = await fetch('/api/status');
-    const statusData = await status.json();
+    const statusRes = await fetch('/api/status');
+    const status = await statusRes.json();
 
     document.getElementById("env").innerText =
-        "Environment: " + statusData.environment;
+        "Environment: " + status.environment;
 
     document.getElementById("version").innerText =
-        "Version: " + statusData.version;
+        "Version: " + status.version;
 
-    // SYSTEM
-    const system = await fetch('/api/system');
-    const systemData = await system.json();
+    // SYSTEM METRICS
+    const systemRes = await fetch('/api/system');
+    const system = await systemRes.json();
 
     document.getElementById("cpu").innerText =
-        "CPU Usage: " + systemData.cpu + "%";
+        "CPU Usage: " + system.cpu + "%";
 
     document.getElementById("memory").innerText =
-        "Memory Usage: " + systemData.memory + "%";
+        "Memory Usage: " + system.memory + "%";
 
     // BUILD HISTORY
-    const builds = await fetch('/api/build-history');
-    const buildData = await builds.json();
+    const buildRes = await fetch('/api/build-history');
+    const builds = await buildRes.json();
 
-    const buildList = document.getElementById("build-history");
-    buildList.innerHTML = "";
+    const buildTable = document.getElementById("build-history");
+    buildTable.innerHTML = "";
 
-    buildData.slice(-5).reverse().forEach(b => {
-        const li = document.createElement("li");
-        li.innerText = `Build #${b.id} - ${b.status}`;
-        buildList.appendChild(li);
+    builds.slice(-5).reverse().forEach(b => {
+        buildTable.innerHTML += `
+            <tr>
+                <td>${b.id}</td>
+                <td>${b.status}</td>
+                <td>${b.timestamp || "-"}</td>
+            </tr>
+        `;
     });
 
     // DEPLOYMENTS
-    const deployments = await fetch('/api/deployments');
-    const deployData = await deployments.json();
+    const deployRes = await fetch('/api/deployments');
+    const deployments = await deployRes.json();
 
-    const deployList = document.getElementById("deployment-history");
-    deployList.innerHTML = "";
+    const deployTable = document.getElementById("deployment-history");
+    deployTable.innerHTML = "";
 
-    deployData.slice(-5).reverse().forEach(d => {
-        const li = document.createElement("li");
-        li.innerText = `${d.environment} - ${d.version} - ${d.status}`;
-        deployList.appendChild(li);
+    deployments.slice(-5).reverse().forEach(d => {
+        deployTable.innerHTML += `
+            <tr>
+                <td>${d.id}</td>
+                <td>${d.environment}</td>
+                <td>${d.version}</td>
+                <td>${d.status}</td>
+                <td>${d.timestamp || "-"}</td>
+            </tr>
+        `;
     });
 
     // LOGS
-    const logs = await fetch('/api/logs');
-    const logData = await logs.json();
+    const logsRes = await fetch('/api/logs');
+    const logs = await logsRes.json();
 
-    const logList = document.getElementById("logs");
-    logList.innerHTML = "";
+    const logDiv = document.getElementById("logs");
+    logDiv.innerHTML = "";
 
-    logData.logs.forEach(l => {
-        const li = document.createElement("li");
-        li.innerText = l;
-        logList.appendChild(li);
+    logs.logs.forEach(l => {
+        logDiv.innerHTML += `<div>> ${l}</div>`;
     });
 }
 
