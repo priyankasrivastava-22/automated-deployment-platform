@@ -30,15 +30,19 @@ def system():
 @main.route("/api/deployments")
 def get_deployments():
     deployments = Deployment.query.all()
-    return jsonify([
-        {
+
+    result = []
+
+    for d in deployments:
+        result.append({
             "id": d.id,
-            "project_name": d.project_name,
+            "environment": d.environment,
+            "version": d.version,
             "status": d.status,
-            "timestamp": d.timestamp
-        }
-        for d in deployments
-    ])
+            "timestamp": d.timestamp.isoformat() if d.timestamp else None
+        })
+
+    return jsonify(result), 200
 
 # GET/Health
 @main.route("/health") 
@@ -46,13 +50,16 @@ def health():
     return {"status": "OK"}
 
 # GET/ environments
-@main.route("/environments")
+@main.route("/api/environments")
 def get_environments():
     envs = Environment.query.all()
-    return [
+
+    result = [
         {"id": e.id, "name": e.name, "status": e.status}
         for e in envs
     ]
+
+    return jsonify(result), 200
 
 #POST /trigger-build
 @main.route("/trigger-build", methods=["POST"])
@@ -63,18 +70,24 @@ def trigger_build():
     return {"message": "Build triggered", "id": build.id} 
 
 #GET /build-history
-@main.route("/build-history")
+@main.route("/api/build-history")
 def build_history():
     builds = Build.query.all()
-    return [
-        {"id": b.id, "status": b.status, "timestamp": b.timestamp}
+
+    result = [
+        {
+            "id": b.id,
+            "status": b.status,
+            "timestamp": b.timestamp.isoformat() if b.timestamp else None
+        }
         for b in builds
     ]
 
+    return jsonify(result), 200
+
 #GET /metrics
-@main.route("/metrics")
+@main.route("/api/metrics")
 def metrics():
-    import psutil
     cpu = psutil.cpu_percent()
     memory = psutil.virtual_memory().percent
 
@@ -82,15 +95,15 @@ def metrics():
     db.session.add(metric)
     db.session.commit()
 
-    return {"cpu": cpu, "memory": memory}
+    return jsonify({"cpu": cpu, "memory": memory}), 200
 
 #GET /logs
-@main.route("/logs")
+@main.route("/api/logs")
 def logs():
-    return {
+    return jsonify({
         "logs": [
             "Container started",
             "Build successful",
             "Deployment completed"
         ]
-    }
+    }), 200

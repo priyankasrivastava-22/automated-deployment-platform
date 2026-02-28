@@ -1,23 +1,42 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>CI/CD Dashboard</title>
+    <title>CI/CD Monitoring Dashboard</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
-<h1>CI/CD Monitoring Dashboard</h1>
+<h1>🚀 CI/CD Monitoring Dashboard</h1>
 
-<div class="card">
-    <h2>Status</h2>
-    <p id="env"></p>
-    <p id="version"></p>
-</div>
+<div class="grid">
 
-<div class="card">
-    <h2>System Metrics</h2>
-    <p id="cpu"></p>
-    <p id="memory"></p>
+    <div class="card">
+        <h2>Environment</h2>
+        <p id="env"></p>
+        <p id="version"></p>
+    </div>
+
+    <div class="card">
+        <h2>System Metrics</h2>
+        <p id="cpu"></p>
+        <p id="memory"></p>
+    </div>
+
+    <div class="card">
+        <h2>Build History</h2>
+        <ul id="build-history"></ul>
+    </div>
+
+    <div class="card">
+        <h2>Deployments</h2>
+        <ul id="deployment-history"></ul>
+    </div>
+
+    <div class="card full-width">
+        <h2>Logs</h2>
+        <ul id="logs"></ul>
+    </div>
+
 </div>
 
 <script src="/static/script.js"></script>
