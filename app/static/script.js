@@ -8,17 +8,39 @@ function triggerBuild() {
     });
 }
 
+function showSection(sectionId) {
+
+    document.getElementById("dashboard-section").classList.add("hidden");
+    document.getElementById("deployments-section").classList.add("hidden");
+    document.getElementById("settings-section").classList.add("hidden");
+
+    document.getElementById(sectionId).classList.remove("hidden");
+}
+
+function showDashboard() {
+    showSection("dashboard-section");
+}
+
+function showDeployments() {
+    showSection("deployments-section");
+}
+
+function showSettings() {
+    showSection("settings-section");
+}
+
 function viewLogs(buildId) {
 
     if (buildId === "latest") {
-        buildId = 102;  // later we will auto fetch latest
+        buildId = 102;  // later dynamic
     }
 
     fetch("/logs/" + buildId)
     .then(res => res.text())
     .then(data => {
-        document.getElementById("dashboard-section").style.display = "none";
-        document.getElementById("deployments-section").style.display = "block";
+
+        showSection("deployments-section");   // cleaner navigation
+
         document.getElementById("log-output").innerText = data;
     });
 }

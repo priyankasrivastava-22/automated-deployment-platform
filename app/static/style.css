@@ -1,3 +1,7 @@
+html, body {
+    height: 100%;
+}
+
 body {
     margin: 0;
     font-family: Arial, sans-serif;
@@ -28,6 +32,7 @@ body {
 /* LAYOUT */
 .main-container {
     display: flex;
+    height: calc(100vh - 60px);
 }
 
 /* SIDEBAR */
@@ -80,6 +85,7 @@ body {
 .content {
     flex: 1;
     padding: 20px 30px;
+    overflow-y: auto;
 }
 
 .status-banner {
