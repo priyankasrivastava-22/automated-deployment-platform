@@ -10,3 +10,4 @@ psutil
 Flask-SQLAlchemy
 requests
 pytest
+python-dotenv
