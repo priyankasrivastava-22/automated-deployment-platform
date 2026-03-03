@@ -6,9 +6,10 @@ COPY app/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app /app/app
+COPY main.py /app/
 
 ENV PYTHONPATH=/app
 
 EXPOSE 5000
 
-CMD ["python3", "-m", "app.main"]
+CMD ["python3", "main.py"]
