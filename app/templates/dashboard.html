@@ -13,7 +13,7 @@
     <div class="sidebar">
         <h2>Environments</h2>
         <ul>
-            <li class="active">UAT</li>
+            <li class="active" onclick="alert('UAT Environment Selected')">UAT</li>
             <li>CD01</li>
             <li>CD02</li>
         </ul>
@@ -25,8 +25,10 @@
             <li class="success">#100 Successful</li>
         </ul>
 
-        <button class="btn-primary">Trigger Build</button>
-        <button class="btn-dark">View Logs</button>
+        <button class="btn-primary" onclick="triggerBuild()">Trigger Build</button>
+        <button class="btn-dark" onclick="document.querySelector('.logs').scrollIntoView({behavior: 'smooth'})">
+    View Logs
+</button>
     </div>
 
     <!-- Main -->
