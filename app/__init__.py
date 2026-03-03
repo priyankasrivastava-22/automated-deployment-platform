@@ -1,7 +1,8 @@
 from flask import Flask
 from .database import db
 from .routes import main
-
+from dotenv import load_dotenv
+load_dotenv()
 
 def create_app():
     app = Flask(__name__)

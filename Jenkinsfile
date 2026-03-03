@@ -28,6 +28,12 @@ pipeline {
             }
         }
     }
+        stage('Test') {
+          steps {
+             sh 'pip install -r app/cd ..requirements.txt'
+             sh 'pytest app/'
+       }
+   }
 
         stage('Build Docker Image') {
             steps {

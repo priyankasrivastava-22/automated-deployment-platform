@@ -1,163 +1,150 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>CI/CD Dashboard</title>
+    <meta charset="UTF-8">
+    <title>CI/CD Deployment Monitoring</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
-<div class="wrapper">
+<div class="layout">
 
-    <!-- TOP NAVBAR -->
-    <div class="topbar">
-        <div class="brand">CI/CD</div>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>Environments</h2>
+        <ul>
+            <li class="active">UAT</li>
+            <li>CD01</li>
+            <li>CD02</li>
+        </ul>
 
-        <div class="top-links">
-            <a href="#" onclick="showDashboard()">Dashboard</a>
-            <a href="#" onclick="showDeployments()">Deployments</a>
-            <a href="#" onclick="showSettings()">Settings</a>
-        </div>
+        <h3>Build History</h3>
+        <ul class="history">
+            <li class="success">#102 Successful</li>
+            <li class="failed">#101 Failed</li>
+            <li class="success">#100 Successful</li>
+        </ul>
+
+        <button class="btn-primary">Trigger Build</button>
+        <button class="btn-dark">View Logs</button>
     </div>
 
-    <div class="main-container">
+    <!-- Main -->
+    <div class="main">
 
-        <!-- SIDEBAR -->
-        <div class="sidebar">
-            <h3>Environments</h3>
-
-            <div class="env-item">Development (UAT)</div>
-            <div class="env-item">Staging (CD01)</div>
-            <div class="env-item">Production (PROD)</div>
-
-            <h3>Build History</h3>
-            <ul class="build-history">
-                <li onclick="viewLogs(102)">✔ #102 Successful</li>
-                <li onclick="viewLogs(101)">✖ #101 Failed</li>
-                <li onclick="viewLogs(100)">✔ #100 Successful</li>
-            </ul>
-
-            <button onclick="triggerBuild()" class="primary-btn">
-                Trigger Build
-            </button>
-
-            <button onclick="viewLogs('latest')" class="dark-btn">
-                View Logs
-            </button>
+        <!-- Top Bar -->
+        <div class="topbar">
+            <h1>CI/CD Enabled Containerized Web Application</h1>
+            <div class="nav">
+                <span class="active">Dashboard</span>
+                <span>Deployments</span>
+                <span>Settings</span>
+            </div>
         </div>
 
-        <!-- CONTENT -->
-        <div class="content">
+        <!-- Latest Build -->
+        <div class="latest-build">
+            <span class="green-dot"></span>
+            Latest Build: <b>#102 Successful</b> – Deployed 2 mins ago
+        </div>
 
-            <!-- STATUS BANNER -->
-            <div class="status-banner">
-                🟢 Latest Build: <b>#102 Successful</b> – Deployed 2 mins ago
+        <!-- Environment Cards -->
+        <div class="cards">
+
+            <div class="card">
+                <h3>UAT</h3>
+                <p>Version: 2.1.0</p>
+                <p>Status: <span class="badge running">Running</span></p>
+                <p>URL: uat.company.local</p>
             </div>
 
-            <!-- DASHBOARD SECTION -->
-            <div id="dashboard-section">
+            <div class="card">
+                <h3>CD01</h3>
+                <p>Version: 2.1.0</p>
+                <p>Status: <span class="badge running">Running</span></p>
+                <p>URL: cd01.company.local</p>
+            </div>
 
-                <!-- ENV CARDS -->
-                <div class="card-row">
+            <div class="card">
+                <h3>CD02</h3>
+                <p>Version: 2.1.0</p>
+                <p>Status: <span class="badge running">Running</span></p>
+                <p>URL: cd02.company.local</p>
+            </div>
 
-                    <div class="card">
-                        <h3>UAT</h3>
-                        <p>Version: 2.1.0</p>
-                        <p>Status: <span class="running">Running</span></p>
-                        <a href="#">uat.company.local</a>
+        </div>
+
+        <!-- Middle Section -->
+        <div class="middle">
+
+            <!-- Deployment Table -->
+            <div class="table-box">
+                <h3>Deployment History</h3>
+                <table>
+                    <tr>
+                        <th>Build ID</th>
+                        <th>Environment</th>
+                        <th>Status</th>
+                        <th>Duration</th>
+                    </tr>
+                    <tr>
+                        <td>#102</td>
+                        <td>CD02</td>
+                        <td class="success">Successful</td>
+                        <td>3m</td>
+                    </tr>
+                    <tr>
+                        <td>#101</td>
+                        <td>CD01</td>
+                        <td class="failed">Failed</td>
+                        <td>1m</td>
+                    </tr>
+                    <tr>
+                        <td>#100</td>
+                        <td>UAT</td>
+                        <td class="success">Successful</td>
+                        <td>2m</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Monitoring -->
+            <div class="monitoring">
+                <h3>System Monitoring</h3>
+
+                <div class="metrics">
+                    <div class="metric">
+                        <h4>CPU Usage</h4>
+                        <p id="cpu">45%</p>
                     </div>
-
-                    <div class="card">
-                        <h3>CD01</h3>
-                        <p>Version: 2.1.0</p>
-                        <p>Status: <span class="running">Running</span></p>
-                        <a href="#">cd01.company.local</a>
+                    <div class="metric">
+                        <h4>Memory Usage</h4>
+                        <p id="memory">68%</p>
                     </div>
-
-                    <div class="card">
-                        <h3>PROD</h3>
-                        <p>Version: 2.1.0</p>
-                        <p>Status: <span class="running">Running</span></p>
-                        <a href="#">prod.company.local</a>
+                    <div class="metric">
+                        <h4>Response Time</h4>
+                        <p id="response">120ms</p>
                     </div>
                 </div>
 
-                <!-- BOTTOM ROW -->
-                <div class="bottom-row">
-
-                    <!-- DEPLOYMENT HISTORY -->
-                    <div class="panel">
-                        <h3>Deployment History</h3>
-                        <table>
-                            <tr>
-                                <th>Build</th>
-                                <th>Env</th>
-                                <th>Status</th>
-                                <th>Duration</th>
-                            </tr>
-                            <tr>
-                                <td>#102</td>
-                                <td>CD01</td>
-                                <td class="success">Successful</td>
-                                <td>3m</td>
-                            </tr>
-                            <tr>
-                                <td>#101</td>
-                                <td>UAT</td>
-                                <td class="failed">Failed</td>
-                                <td>1m</td>
-                            </tr>
-                        </table>
-                    </div>
-
-                    <!-- SYSTEM MONITORING -->
-                    <div class="panel">
-                        <h3>System Monitoring</h3>
-
-                        <div class="metrics">
-                            <div class="metric">
-                                <p>CPU</p>
-                                <h2>45%</h2>
-                            </div>
-                            <div class="metric">
-                                <p>Memory</p>
-                                <h2>68%</h2>
-                            </div>
-                            <div class="metric">
-                                <p>Response</p>
-                                <h2>120ms</h2>
-                            </div>
-                        </div>
-
-                        <div class="log-lines">
-                            <p class="info">INFO - Container started</p>
-                            <p class="warning">WARNING - High memory</p>
-                            <p class="failed">ERROR - Deployment failed</p>
-                        </div>
-
-                    </div>
-
+                <div class="logs">
+                    <h4>Logs & Alerts</h4>
+                    <p class="info">INFO - Container started successfully</p>
+                    <p class="warning">WARNING - High memory usage detected</p>
+                    <p class="error">ERROR - Deployment failed in CD01</p>
                 </div>
 
             </div>
 
-            <!-- DEPLOYMENTS SECTION -->
-            <div id="deployments-section" class="hidden">
-                <h2>Build Logs</h2>
-                <div id="log-output"></div>
-            </div>
-
-            <!-- SETTINGS SECTION -->
-            <div id="settings-section" class="hidden">
-                <h2>Jenkins Integration</h2>
-                <p>Jenkins URL: http://localhost:8080</p>
-            </div>
-
-            <footer>
-                © 2026 Priyanka Srivastava | Licensed under MIT
-            </footer>
-
         </div>
+
+        <!-- Footer -->
+        <footer>
+            © 2026 Priyanka Srivastava | Licensed under MIT
+        </footer>
+
     </div>
+
 </div>
 
 <script src="{{ url_for('static', filename='script.js') }}"></script>

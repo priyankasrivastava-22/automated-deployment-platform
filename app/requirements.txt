@@ -9,3 +9,5 @@ flask
 psutil
 Flask-SQLAlchemy
 requests
+pip freeze > requirements.txt
+pytest

@@ -1,46 +1,10 @@
-function triggerBuild() {
-    fetch("/trigger-build", {
-        method: "POST"
-    })
-    .then(res => res.json())
-    .then(data => {
-        alert(data.status);
-    });
+async function loadMetrics() {
+    const response = await fetch('/api/system');
+    const data = await response.json();
+
+    document.getElementById("cpu").innerText = data.cpu + "%";
+    document.getElementById("memory").innerText = data.memory + "%";
 }
 
-function showSection(sectionId) {
-
-    document.getElementById("dashboard-section").classList.add("hidden");
-    document.getElementById("deployments-section").classList.add("hidden");
-    document.getElementById("settings-section").classList.add("hidden");
-
-    document.getElementById(sectionId).classList.remove("hidden");
-}
-
-function showDashboard() {
-    showSection("dashboard-section");
-}
-
-function showDeployments() {
-    showSection("deployments-section");
-}
-
-function showSettings() {
-    showSection("settings-section");
-}
-
-function viewLogs(buildId) {
-
-    if (buildId === "latest") {
-        buildId = 102;  // later dynamic
-    }
-
-    fetch("/logs/" + buildId)
-    .then(res => res.text())
-    .then(data => {
-
-        showSection("deployments-section");   // cleaner navigation
-
-        document.getElementById("log-output").innerText = data;
-    });
-}
+setInterval(loadMetrics, 5000);
+loadMetrics();

@@ -3,6 +3,15 @@ import psutil
 import os
 from .models import Environment, Build, Deployment, SystemMetrics
 from .database import db
+import requests
+from sqlalchemy import text
+import logging
+logger = logging.getLogger(__name__)
+
+JENKINS_URL = os.getenv("JENKINS_URL")
+JOB_NAME = os.getenv("JENKINS_JOB")
+USERNAME = os.getenv("JENKINS_USER")
+API_TOKEN = os.getenv("JENKINS_TOKEN")
 
 main = Blueprint("main", __name__)
 
@@ -45,9 +54,22 @@ def get_deployments():
     return jsonify(result), 200
 
 # GET/Health
-@main.route("/health") 
+@main.route("/health")
 def health():
-    return {"status": "OK"}
+    try:
+        # Optional DB check
+        db.session.execute(text("SELECT 1"))
+        db_status = "UP"
+    except Exception:
+        db_status = "DOWN"
+
+    return jsonify({
+        "status": "UP",
+        "service": "Automated Deployment Platform",
+        "version": VERSION,
+        "environment": os.getenv("ENV", "production"),
+        "database": db_status
+    }), 200
 
 # GET/ environments
 @main.route("/api/environments")
@@ -64,10 +86,23 @@ def get_environments():
 #POST /trigger-build
 @main.route("/trigger-build", methods=["POST"])
 def trigger_build():
-    build = Build(status="success")
-    db.session.add(build)
-    db.session.commit()
-    return {"message": "Build triggered", "id": build.id} 
+    if not JENKINS_URL:
+        return jsonify({"error": "Jenkins not configured"}), 500
+
+    url = f"{JENKINS_URL}/job/{JOB_NAME}/build"
+
+    response = requests.post(
+        url,
+        auth=(USERNAME, API_TOKEN)
+    )
+
+    if response.status_code in [200, 201]:
+        build = Build(status="Triggered")
+        db.session.add(build)
+        db.session.commit()
+        return jsonify({"status": "Build Triggered"})
+    else:
+        return jsonify({"status": "Failed"}), 500
 
 #GET /build-history
 @main.route("/api/build-history")
