@@ -6,6 +6,7 @@ from .database import db
 import requests
 from sqlalchemy import text
 import logging
+import subprocess
 logger = logging.getLogger(__name__)
 
 JENKINS_URL = os.getenv("JENKINS_URL")
@@ -107,18 +108,25 @@ def trigger_build():
 #GET /build-history
 @main.route("/api/build-history")
 def build_history():
-    builds = Build.query.all()
+    if not all([JENKINS_URL, JOB_NAME, USERNAME, API_TOKEN]):
+        return jsonify({"error": "Jenkins configuration missing"}), 500
 
-    result = [
-        {
-            "id": b.id,
-            "status": b.status,
-            "timestamp": b.timestamp.isoformat() if b.timestamp else None
-        }
-        for b in builds
-    ]
+    try:
+        url = f"{JENKINS_URL}/job/{JOB_NAME}/lastBuild/api/json"
+        response = requests.get(url, auth=(USERNAME, API_TOKEN))
 
-    return jsonify(result), 200
+        if response.status_code == 200:
+            data = response.json()
+            return jsonify({
+                "build_number": data.get("number"),
+                "status": data.get("result"),
+                "timestamp": data.get("timestamp")
+            }), 200
+        else:
+            return jsonify({"error": "Failed to fetch build status"}), 500
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 #GET /metrics
 @main.route("/api/metrics")
@@ -135,10 +143,9 @@ def metrics():
 #GET /logs
 @main.route("/api/logs")
 def logs():
-    return jsonify({
-        "logs": [
-            "Container started",
-            "Build successful",
-            "Deployment completed"
-        ]
-    }), 200
+    try:
+        container_name = os.getenv("CONTAINER_NAME", "automated-app-dev")
+        result = subprocess.getoutput(f"docker logs {container_name} --tail 20")
+        return jsonify({"logs": result.split("\n")}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
