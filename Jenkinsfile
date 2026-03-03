@@ -29,10 +29,15 @@ pipeline {
         }
     }
         stage('Test') {
-          steps {
-             sh 'pip install -r app/cd ..requirements.txt'
-             sh 'pytest app/'
-       }
+             steps {
+             sh '''
+             python3 -m venv venv
+             . venv/bin/activate
+             pip install --upgrade pip
+             pip install -r app/requirements.txt
+             pytest app/
+             '''
+        }
    }
 
         stage('Build Docker Image') {
