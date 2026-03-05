@@ -151,7 +151,7 @@ docker build -t automated-deployment-platform:latest -f docker/Dockerfile .
 docker run -d --name automated-app-dev --env-file .env -p 5001:5001 automated-deployment-platform
 
 3. Dashboard runs on
-http://localhost:5000
+http://localhost:5001
 
 ## ## Dashboard Preview
 ![alt text](image-1.png)
@@ -165,5 +165,5 @@ http://localhost:5000
 - Ansible based automated deployments
 
 
-* Author
+## Author
 Priyanka Srivastava
