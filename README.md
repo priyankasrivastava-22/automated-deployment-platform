@@ -68,7 +68,7 @@ This helps reduce the need to directly access Jenkins and provides a simplified 
                            |
                     API Requests
                            |
-                           v
+                           |
                 +----------------------+
                 |    Flask Backend     |
                 |   routes / services  |
@@ -76,15 +76,15 @@ This helps reduce the need to directly access Jenkins and provides a simplified 
                            |
         +------------------+------------------+
         |                                     |
-        v                                     v
+        |                                     |
 +---------------+                    +----------------+
 |   Jenkins     |                    |    SQLite DB   |
 | CI/CD Jobs    |                    | Build History  |
 +---------------+                    +----------------+
         |
-        v
+        |
 +----------------+
-| Docker Runtime |
+| Docker Runtime |  
 | Application    |
 +----------------+
 
