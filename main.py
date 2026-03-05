@@ -12,4 +12,4 @@ app = create_app()
 
 if __name__ == "__main__":
     port = 5001 if os.getenv("ENV") == "dev" else 5000
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=port, debug=True)
