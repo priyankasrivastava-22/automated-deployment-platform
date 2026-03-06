@@ -119,24 +119,24 @@ automated-deployment-platform
 ## Running Development Environment
 
 1. Clone repository
-git clone <repository-url>
-cd automated-deployment-platform
+- git clone <repository-url>
+- cd automated-deployment-platform
 
 2. Switch to development branch
-git checkout dev
+- git checkout dev
 
 3. Create virtual environment
-python3 -m venv venv
-source venv/bin/activate
+- python3 -m venv venv
+- source venv/bin/activate
 
 4. Install dependencies
-pip install -r app/requirements.txt
+- pip install -r app/requirements.txt
 
 5. Run development server
-python3 main.py
+- python3 main.py
 
 6. Access dashboard
-http://localhost:5001
+- http://localhost:5001
 
 
 ## Running the Project Using Docker
@@ -145,15 +145,16 @@ Docker is used to run the application in a containerized environment.
 ### Build Docker Image
 
 1. From the root directory:
-docker build -t automated-deployment-platform:latest -f docker/Dockerfile .
+- docker build -t automated-deployment-platform:latest -f docker/Dockerfile .
 
 2. Run Conatiner
-docker run -d --name automated-app-dev --env-file .env -p 5001:5001 automated-deployment-platform
+- docker run -d --name automated-app-dev --env-file .env -p 5001:5001 automated-deployment-platform
 
 3. Dashboard runs on
-http://localhost:5001
+- http://localhost:5001
 
-## ## Dashboard Preview
+
+## Dashboard Preview
 ![alt text](image-1.png)
 
 
