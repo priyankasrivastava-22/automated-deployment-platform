@@ -149,3 +149,33 @@ def logs():
         return jsonify({"logs": result.split("\n")}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@main.route("/environments")
+def environments():
+    return render_template("environments.html")
+
+
+@main.route("/builds")
+def builds():
+    return render_template("builds.html")
+
+
+@main.route("/deployments")
+def deployments():
+    return render_template("deployments.html")
+
+
+@main.route("/monitoring")
+def monitoring():
+    return render_template("monitoring.html")
+
+
+@main.route("/logs-page")
+def logs_page():
+    return render_template("logs.html")
+
+
+@main.route("/settings")
+def settings():
+    return render_template("settings.html")

@@ -1,14 +1,3 @@
-// async function loadMetrics() {
-//     const response = await fetch('/api/system');
-//     const data = await response.json();
-
-//     document.getElementById("cpu").innerText = data.cpu + "%";
-//     document.getElementById("memory").innerText = data.memory + "%";
-// }
-
-// setInterval(loadMetrics, 5000);
-// loadMetrics();
-
 // Fetch system status
 async function loadStatus() {
     try {
@@ -114,7 +103,6 @@ async function triggerBuild() {
 setInterval(() => {
     loadStatus();
     loadLogs();
-    loadBuildHistory();
 }, 5000);
 
 
@@ -122,5 +110,4 @@ setInterval(() => {
 window.onload = function () {
     loadStatus();
     loadLogs();
-    loadBuildHistory();
 };

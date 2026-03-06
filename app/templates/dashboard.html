@@ -13,22 +13,14 @@
     <div class="sidebar">
         <h2>Environments</h2>
         <ul>
-            <li class="active" onclick="alert('UAT Environment Selected')">UAT</li>
-            <li>CD01</li>
-            <li>CD02</li>
+            <li><a href="/">Dashboard</a></li>
+            <li><a href="/environments">Environments</a></li>
+            <li><a href="/builds">Build History</a></li>
+            <li><a href="/deployments">Deployments</a></li>
+            <li><a href="/monitoring">Monitoring</a></li>
+            <li><a href="/logs-page">Logs</a></li>
+            <li><a href="/settings">Settings</a></li>
         </ul>
-
-        <h3>Build History</h3>
-        <ul class="history">
-            <li class="success">#102 Successful</li>
-            <li class="failed">#101 Failed</li>
-            <li class="success">#100 Successful</li>
-        </ul>
-
-        <button class="btn-primary" onclick="triggerBuild()">Trigger Build</button>
-        <button class="btn-dark" onclick="document.querySelector('.logs').scrollIntoView({behavior: 'smooth'})">
-    View Logs
-</button>
     </div>
 
     <!-- Main -->
