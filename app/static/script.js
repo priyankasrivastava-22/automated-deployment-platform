@@ -111,3 +111,34 @@ window.onload = function () {
     loadStatus();
     loadLogs();
 };
+
+// Monitoring page metrics
+async function loadSystemMetrics() {
+    try {
+        const response = await fetch("/api/system-metrics");
+        const data = await response.json();
+
+        if (document.getElementById("cpu")) {
+            document.getElementById("cpu").innerText = data.cpu;
+        }
+
+        if (document.getElementById("memory")) {
+            document.getElementById("memory").innerText = data.memory;
+        }
+
+        if (document.getElementById("disk")) {
+            document.getElementById("disk").innerText = data.disk;
+        }
+
+        if (document.getElementById("uptime")) {
+            document.getElementById("uptime").innerText = data.uptime;
+        }
+
+    } catch (error) {
+        console.error("Error loading metrics:", error);
+    }
+}
+
+// refresh every 5 seconds
+setInterval(loadSystemMetrics, 5000);
+loadSystemMetrics();

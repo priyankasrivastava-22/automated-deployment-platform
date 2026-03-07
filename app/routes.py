@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, render_template
 import psutil
+import time
 import os
 from .models import Environment, Build, Deployment, SystemMetrics
 from .database import db
@@ -179,3 +180,21 @@ def logs_page():
 @main.route("/settings")
 def settings():
     return render_template("settings.html")
+
+start_time = time.time()
+
+@main.route("/api/system-metrics")
+def system_metrics():
+    cpu = psutil.cpu_percent(interval=1)
+    memory = psutil.virtual_memory().percent
+    disk = psutil.disk_usage('/').percent
+
+    uptime_seconds = int(time.time() - start_time)
+    uptime = str(uptime_seconds) + " seconds"
+
+    return jsonify({
+        "cpu": cpu,
+        "memory": memory,
+        "disk": disk,
+        "uptime": uptime
+    })
