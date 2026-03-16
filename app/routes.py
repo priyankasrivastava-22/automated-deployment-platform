@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, render_template
+from flask import Blueprint, jsonify, render_template, request
 import psutil
 import time
 import os
@@ -8,6 +8,8 @@ import requests
 from sqlalchemy import text
 import logging
 import subprocess
+from .deployment_service import deploy_container
+
 logger = logging.getLogger(__name__)
 
 JENKINS_URL = os.getenv("JENKINS_URL")
@@ -19,9 +21,14 @@ main = Blueprint("main", __name__)
 
 VERSION = "1.0.0"
 
+# ---------------- DASHBOARD ----------------
+
 @main.route("/")
 def dashboard():
     return render_template("dashboard.html")
+
+
+# ---------------- STATUS ----------------
 
 @main.route("/api/status")
 def status():
@@ -31,12 +38,18 @@ def status():
         "version": VERSION
     })
 
+
+# ---------------- SYSTEM INFO ----------------
+
 @main.route("/api/system")
 def system():
     return jsonify({
         "cpu": psutil.cpu_percent(),
         "memory": psutil.virtual_memory().percent
     })
+
+
+# ---------------- DEPLOYMENTS ----------------
 
 @main.route("/api/deployments")
 def get_deployments():
@@ -55,11 +68,12 @@ def get_deployments():
 
     return jsonify(result), 200
 
-# GET/Health
+
+# ---------------- HEALTH CHECK ----------------
+
 @main.route("/health")
 def health():
     try:
-        # Optional DB check
         db.session.execute(text("SELECT 1"))
         db_status = "UP"
     except Exception:
@@ -73,7 +87,9 @@ def health():
         "database": db_status
     }), 200
 
-# GET/ environments
+
+# ---------------- ENVIRONMENTS ----------------
+
 @main.route("/api/environments")
 def get_environments():
     envs = Environment.query.all()
@@ -85,9 +101,12 @@ def get_environments():
 
     return jsonify(result), 200
 
-#POST /trigger-build
+
+# ---------------- TRIGGER BUILD ----------------
+
 @main.route("/trigger-build", methods=["POST"])
 def trigger_build():
+
     if not JENKINS_URL:
         return jsonify({"error": "Jenkins not configured"}), 500
 
@@ -102,55 +121,85 @@ def trigger_build():
         build = Build(status="Triggered")
         db.session.add(build)
         db.session.commit()
-        return jsonify({"status": "Build Triggered"})
-    else:
-        return jsonify({"status": "Failed"}), 500
 
-#GET /build-history
+        return jsonify({"status": "Build Triggered"})
+
+    return jsonify({"status": "Failed"}), 500
+
+
+# ---------------- BUILD HISTORY ----------------
+
 @main.route("/api/build-history")
 def build_history():
+
     if not all([JENKINS_URL, JOB_NAME, USERNAME, API_TOKEN]):
         return jsonify({"error": "Jenkins configuration missing"}), 500
 
     try:
+
         url = f"{JENKINS_URL}/job/{JOB_NAME}/lastBuild/api/json"
+
         response = requests.get(url, auth=(USERNAME, API_TOKEN))
 
         if response.status_code == 200:
+
             data = response.json()
+
             return jsonify({
                 "build_number": data.get("number"),
                 "status": data.get("result"),
                 "timestamp": data.get("timestamp")
             }), 200
-        else:
-            return jsonify({"error": "Failed to fetch build status"}), 500
+
+        return jsonify({"error": "Failed to fetch build status"}), 500
 
     except Exception as e:
+
         return jsonify({"error": str(e)}), 500
 
-#GET /metrics
+
+# ---------------- METRICS ----------------
+
 @main.route("/api/metrics")
 def metrics():
+
     cpu = psutil.cpu_percent()
     memory = psutil.virtual_memory().percent
 
     metric = SystemMetrics(cpu=cpu, memory=memory)
+
     db.session.add(metric)
     db.session.commit()
 
-    return jsonify({"cpu": cpu, "memory": memory}), 200
+    return jsonify({
+        "cpu": cpu,
+        "memory": memory
+    }), 200
 
-#GET /logs
+
+# ---------------- LOGS ----------------
+
 @main.route("/api/logs")
 def logs():
+
     try:
+
         container_name = os.getenv("CONTAINER_NAME", "automated-app-dev")
-        result = subprocess.getoutput(f"docker logs {container_name} --tail 20")
-        return jsonify({"logs": result.split("\n")}), 200
+
+        result = subprocess.getoutput(
+            f"docker logs {container_name} --tail 20"
+        )
+
+        return jsonify({
+            "logs": result.split("\n")
+        }), 200
+
     except Exception as e:
+
         return jsonify({"error": str(e)}), 500
 
+
+# ---------------- PAGE ROUTES ----------------
 
 @main.route("/environments")
 def environments():
@@ -181,10 +230,14 @@ def logs_page():
 def settings():
     return render_template("settings.html")
 
+
+# ---------------- SYSTEM METRICS ----------------
+
 start_time = time.time()
 
 @main.route("/api/system-metrics")
 def system_metrics():
+
     cpu = psutil.cpu_percent(interval=1)
     memory = psutil.virtual_memory().percent
     disk = psutil.disk_usage('/').percent
@@ -198,3 +251,54 @@ def system_metrics():
         "disk": disk,
         "uptime": uptime
     })
+
+
+# ---------------- DEPLOY APPLICATION ----------------
+
+@main.route("/deploy", methods=["POST"])
+def deploy():
+
+    data = request.json
+
+    environment = data.get("environment")
+    version = data.get("version")
+
+    success = deploy_container(version, environment)
+
+    if success:
+
+        deployment = Deployment(
+            environment=environment,
+            version=version,
+            status="Successful"
+        )
+
+        db.session.add(deployment)
+        db.session.commit()
+
+        return jsonify({"status": "Deployment Successful"}), 200
+
+    return jsonify({"status": "Deployment Failed"}), 500
+
+
+# ---------------- DEPLOYMENT HISTORY ----------------
+
+@main.route("/api/deployment-history")
+def deployment_history():
+
+    deployments = Deployment.query.order_by(
+        Deployment.timestamp.desc()
+    ).all()
+
+    result = []
+
+    for d in deployments:
+
+        result.append({
+            "environment": d.environment,
+            "version": d.version,
+            "status": d.status,
+            "timestamp": d.timestamp.isoformat()
+        })
+
+    return jsonify(result)
