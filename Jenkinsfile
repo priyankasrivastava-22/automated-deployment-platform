@@ -70,5 +70,15 @@ pipeline {
                 sh 'docker image prune -f'
             }
         }
+
+        stage('Auto Deploy to Dev') {
+            steps {
+              sh '''
+              curl -X POST http://localhost:5001/deploy \
+              -H "Content-Type: application/json" \
+              -d '{"environment":"dev","version":"latest"}'
+             '''
+            }
+        }
     }
 }
