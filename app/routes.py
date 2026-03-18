@@ -8,28 +8,32 @@ import requests
 from sqlalchemy import text
 import logging
 import subprocess
-from .deployment_service import deploy_container
 
+# Logger setup
 logger = logging.getLogger(__name__)
 
+# Jenkins configuration (from environment variables)
 JENKINS_URL = os.getenv("JENKINS_URL")
 JOB_NAME = os.getenv("JENKINS_JOB")
 USERNAME = os.getenv("JENKINS_USER")
 API_TOKEN = os.getenv("JENKINS_TOKEN")
 
+# Blueprint creation
 main = Blueprint("main", __name__)
 
+# Application version
 VERSION = "1.0.0"
 
-# ---------------- DASHBOARD ----------------
 
+# ---------------- DASHBOARD ----------------
+# Loads main dashboard UI
 @main.route("/")
 def dashboard():
     return render_template("dashboard.html")
 
 
 # ---------------- STATUS ----------------
-
+# Returns app status and environment info
 @main.route("/api/status")
 def status():
     return jsonify({
@@ -40,7 +44,7 @@ def status():
 
 
 # ---------------- SYSTEM INFO ----------------
-
+# Returns CPU and Memory usage
 @main.route("/api/system")
 def system():
     return jsonify({
@@ -50,13 +54,12 @@ def system():
 
 
 # ---------------- DEPLOYMENTS ----------------
-
+# Fetch all deployments from DB
 @main.route("/api/deployments")
 def get_deployments():
     deployments = Deployment.query.all()
 
     result = []
-
     for d in deployments:
         result.append({
             "id": d.id,
@@ -70,7 +73,7 @@ def get_deployments():
 
 
 # ---------------- HEALTH CHECK ----------------
-
+# Checks DB connectivity
 @main.route("/health")
 def health():
     try:
@@ -89,7 +92,7 @@ def health():
 
 
 # ---------------- ENVIRONMENTS ----------------
-
+# Returns all environments (dev, prod etc.)
 @main.route("/api/environments")
 def get_environments():
     envs = Environment.query.all()
@@ -103,20 +106,24 @@ def get_environments():
 
 
 # ---------------- TRIGGER BUILD ----------------
-
+# Triggers Jenkins job (CI/CD pipeline)
 @main.route("/trigger-build", methods=["POST"])
 def trigger_build():
 
+    # Check Jenkins config
     if not JENKINS_URL:
         return jsonify({"error": "Jenkins not configured"}), 500
 
+    # Jenkins build URL
     url = f"{JENKINS_URL}/job/{JOB_NAME}/build"
 
+    # Trigger build using API
     response = requests.post(
         url,
         auth=(USERNAME, API_TOKEN)
     )
 
+    # Save build record in DB
     if response.status_code in [200, 201]:
         build = Build(status="Triggered")
         db.session.add(build)
@@ -128,7 +135,7 @@ def trigger_build():
 
 
 # ---------------- BUILD HISTORY ----------------
-
+# Fetch latest build status from Jenkins
 @main.route("/api/build-history")
 def build_history():
 
@@ -136,13 +143,11 @@ def build_history():
         return jsonify({"error": "Jenkins configuration missing"}), 500
 
     try:
-
         url = f"{JENKINS_URL}/job/{JOB_NAME}/lastBuild/api/json"
 
         response = requests.get(url, auth=(USERNAME, API_TOKEN))
 
         if response.status_code == 200:
-
             data = response.json()
 
             return jsonify({
@@ -154,12 +159,11 @@ def build_history():
         return jsonify({"error": "Failed to fetch build status"}), 500
 
     except Exception as e:
-
         return jsonify({"error": str(e)}), 500
 
 
 # ---------------- METRICS ----------------
-
+# Store CPU and memory usage in DB
 @main.route("/api/metrics")
 def metrics():
 
@@ -178,13 +182,20 @@ def metrics():
 
 
 # ---------------- LOGS ----------------
-
+# Fetch last 20 logs from Docker container
 @main.route("/api/logs")
 def logs():
 
     try:
-
         container_name = os.getenv("CONTAINER_NAME", "automated-app-dev")
+
+        # Check if container exists
+        check = subprocess.getoutput(f"docker ps -a --filter name={container_name} --format '{{{{.Names}}}}'")
+
+        if container_name not in check:
+            return jsonify({
+                "logs": [f"Container '{container_name}' not found. Please run Jenkins pipeline."]
+            }), 200
 
         result = subprocess.getoutput(
             f"docker logs {container_name} --tail 20"
@@ -195,11 +206,10 @@ def logs():
         }), 200
 
     except Exception as e:
-
         return jsonify({"error": str(e)}), 500
 
-
 # ---------------- PAGE ROUTES ----------------
+# UI navigation routes
 
 @main.route("/environments")
 def environments():
@@ -232,6 +242,7 @@ def settings():
 
 
 # ---------------- SYSTEM METRICS ----------------
+# Advanced system info (CPU, memory, disk, uptime)
 
 start_time = time.time()
 
@@ -253,54 +264,8 @@ def system_metrics():
     })
 
 
-# ---------------- DEPLOY APPLICATION ----------------
-
-@main.route("/deploy", methods=["POST"])
-def deploy():
-
-    #Get request data from Jenkins/API
-    data = request.json
-
-    environment = data.get("environment")
-    version = data.get("version")
-
-    #Validate input
-    if not environment or not version:
-        return jsonify({"error": "Missing environment or version"}), 400
-
-    logger.info(f"Starting deployment for {environment} with version {version}")
-
-    try:
-        #Call deployment logic (THIS is where actual Docker commands run)
-        success = deploy_container(version, environment)
-
-        if success:
-            #Save deployment record in DB
-            deployment = Deployment(
-                environment=environment,
-                version=version,
-                status="Successful"
-            )
-
-            db.session.add(deployment)
-            db.session.commit()
-
-            logger.info("Deployment successful")
-
-            return jsonify({"status": "Deployment Successful"}), 200
-
-        else:
-            logger.error("Deployment failed inside deploy_container")
-
-            return jsonify({"status": "Deployment Failed"}), 500
-
-    except Exception as e:
-        logger.error(f"Deployment exception: {str(e)}")
-
-        return jsonify({"error": str(e)}), 500
-
-
 # ---------------- DEPLOYMENT HISTORY ----------------
+# Fetch deployment history from DB
 
 @main.route("/api/deployment-history")
 def deployment_history():
@@ -312,7 +277,6 @@ def deployment_history():
     result = []
 
     for d in deployments:
-
         result.append({
             "environment": d.environment,
             "version": d.version,
