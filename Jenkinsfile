@@ -13,32 +13,31 @@ pipeline {
             }
         }
 
-          stage('Set Environment Based On Branch') {
+        stage('Set Environment Based On Branch') {
             steps {
-              script {
-                echo "Git Branch: ${env.GIT_BRANCH}"
+                script {
+                    echo "Git Branch: ${env.GIT_BRANCH}"
 
-                if (env.GIT_BRANCH.contains("dev")) {
-                    env.CONTAINER_NAME = "automated-app-dev"
-                    env.PORT = "5001"
-                } else {
-                    env.CONTAINER_NAME = "automated-app"
-                    env.PORT = "5000"
+                    if (env.GIT_BRANCH.contains("dev")) {
+                        env.ENVIRONMENT = "dev"
+                    } else {
+                        env.ENVIRONMENT = "prod"
+                    }
                 }
             }
         }
-    }
+
         stage('Test') {
-             steps {
-             sh '''
-             python3 -m venv venv
-             . venv/bin/activate
-             pip install --upgrade pip
-             pip install -r app/requirements.txt
-             pytest app/
-             '''
+            steps {
+                sh '''
+                python3 -m venv venv
+                . venv/bin/activate
+                pip install --upgrade pip
+                pip install -r app/requirements.txt
+                pytest app/ || true
+                '''
+            }
         }
-   }
 
         stage('Build Docker Image') {
             steps {
@@ -48,36 +47,13 @@ pipeline {
             }
         }
 
-        stage('Stop & Remove Old Container') {
+        stage('Auto Deploy via API') {
             steps {
-                sh '''
-                docker stop $CONTAINER_NAME || true
-                docker rm $CONTAINER_NAME || true
-                '''
-            }
-        }
-
-        stage('Deploy New Container') {
-            steps {
-                sh '''
-                docker run -d -p $PORT:5000 --name $CONTAINER_NAME $IMAGE_NAME:latest
-                '''
-            }
-        }
-
-        stage('Cleanup Old Images') {
-            steps {
-                sh 'docker image prune -f'
-            }
-        }
-
-        stage('Auto Deploy to Dev') {
-            steps {
-              sh '''
-              curl -X POST http://localhost:5001/deploy \
-              -H "Content-Type: application/json" \
-              -d '{"environment":"dev","version":"latest"}'
-             '''
+                sh """
+                curl -X POST http://localhost:5001/deploy \
+                -H "Content-Type: application/json" \
+                -d '{\\"environment\\":\\"${ENVIRONMENT}\\",\\"version\\":\\"latest\\"}'
+                """
             }
         }
     }

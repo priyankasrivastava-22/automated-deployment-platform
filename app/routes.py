@@ -258,27 +258,46 @@ def system_metrics():
 @main.route("/deploy", methods=["POST"])
 def deploy():
 
+    #Get request data from Jenkins/API
     data = request.json
 
     environment = data.get("environment")
     version = data.get("version")
 
-    success = deploy_container(version, environment)
+    #Validate input
+    if not environment or not version:
+        return jsonify({"error": "Missing environment or version"}), 400
 
-    if success:
+    logger.info(f"Starting deployment for {environment} with version {version}")
 
-        deployment = Deployment(
-            environment=environment,
-            version=version,
-            status="Successful"
-        )
+    try:
+        #Call deployment logic (THIS is where actual Docker commands run)
+        success = deploy_container(version, environment)
 
-        db.session.add(deployment)
-        db.session.commit()
+        if success:
+            #Save deployment record in DB
+            deployment = Deployment(
+                environment=environment,
+                version=version,
+                status="Successful"
+            )
 
-        return jsonify({"status": "Deployment Successful"}), 200
+            db.session.add(deployment)
+            db.session.commit()
 
-    return jsonify({"status": "Deployment Failed"}), 500
+            logger.info("Deployment successful")
+
+            return jsonify({"status": "Deployment Successful"}), 200
+
+        else:
+            logger.error("Deployment failed inside deploy_container")
+
+            return jsonify({"status": "Deployment Failed"}), 500
+
+    except Exception as e:
+        logger.error(f"Deployment exception: {str(e)}")
+
+        return jsonify({"error": str(e)}), 500
 
 
 # ---------------- DEPLOYMENT HISTORY ----------------
