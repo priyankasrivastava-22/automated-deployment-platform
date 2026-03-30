@@ -10,6 +10,6 @@ COPY main.py /app/
 
 ENV PYTHONPATH=/app
 
-EXPOSE 5000
+EXPOSE 5002
 
 CMD ["python3", "main.py"]

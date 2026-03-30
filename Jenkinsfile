@@ -25,7 +25,7 @@ pipeline {
                         env.PORT = "5001"
                     } else {
                         env.CONTAINER_NAME = "automated-app"
-                        env.PORT = "5000"
+                        env.PORT = "5002"
                     }
 
                     echo "Container: ${env.CONTAINER_NAME}"
@@ -72,7 +72,7 @@ pipeline {
         stage('Deploy New Container') {
             steps {
                 sh '''
-                docker run -d -p $PORT:5000 \
+                docker run -d -p $PORT:5002 \
                 --name $CONTAINER_NAME \
                 --restart unless-stopped \
                 $IMAGE_NAME:latest
