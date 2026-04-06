@@ -1,16 +1,45 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>Deployment</title>
-</head>
+<h2>Deployments</h2>
 
-<body>
+<button onclick="deployDev()">Deploy to Dev</button>
 
-<h1>Deployments Page</h1>
+<ul id="deployment-history"></ul>
 
-<p>This page will show UAT, CD01 and CD02 environment details.</p>
+<script>
 
-<a href="/">Back to Dashboard</a>
+async function deployDev(){
 
-</body>
-</html>
+    await fetch("/deploy",{
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+            environment:"dev",
+            version:"1.0.1"
+        })
+    })
+
+    loadDeployments()
+}
+
+async function loadDeployments(){
+
+    const response = await fetch("/api/deployment-history")
+    const data = await response.json()
+
+    const list = document.getElementById("deployment-history")
+    list.innerHTML=""
+
+    data.forEach(d => {
+
+        const li=document.createElement("li")
+
+        li.innerText =
+        `${d.environment} - v${d.version} - ${d.status}`
+
+        list.appendChild(li)
+
+    })
+}
+
+loadDeployments()
